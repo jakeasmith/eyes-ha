@@ -62,8 +62,8 @@ const Renderer = (() => {
       const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1);
       const h = d.irisHue;
       const s = Math.min(1, d.irisSat * 0.8);
-      g.addColorStop(0, hsl(h, s, 0.62, 0.55));
-      g.addColorStop(0.45, hsl(h, s, 0.55, 0.18));
+      g.addColorStop(0, hsl(h, s, 0.62, 0.85));
+      g.addColorStop(0.45, hsl(h, s, 0.55, 0.30));
       g.addColorStop(1, hsl(h, s, 0.5, 0));
       return g;
     });
@@ -203,7 +203,7 @@ const Renderer = (() => {
     if (d.browVisible <= 0.01) return;
     const raise = isR ? d.lidAsym * CONFIG.lidAsymBrowFactor : 0;
     const browH = Math.min(1.4, d.browHeight + raise);
-    const cy = -h * (0.78 + 0.35 * browH);
+    const cy = -h * (0.74 + 0.33 * browH);
 
     ctx.save();
     // Canonical frame: -x = inner (nose) end. Mirror per side so browAngle
@@ -212,10 +212,10 @@ const Renderer = (() => {
     ctx.translate(0, cy);
     ctx.rotate(d.browAngle * DEG);
 
-    const tIn = h * 0.13;   // inner thickness
+    const tIn = h * 0.165;   // inner thickness
     const tOut = h * 0.045; // tapered outer end
     const archLift = -d.browArch * h * 0.30;
-    const x0 = -w * 0.46, x1 = w * 0.5;
+    const x0 = -w * 0.44, x1 = w * 0.48;
     const y0 = h * 0.02, y1 = h * 0.06;
 
     ctx.beginPath();

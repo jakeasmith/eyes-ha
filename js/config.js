@@ -51,11 +51,11 @@ const CONFIG = {
   iris: {
     texSize: 512,          // offscreen raster resolution
     striationCount: 56,    // pupillary-zone radial striations (spec: 40–70)
-    striationAlpha: 0.55,
+    striationAlpha: 0.72,
     collaretteU: 0.33,     // boundary at ⅓ of pupil→limbus span
     collaretteJag: 0.05,   // radial irregularity of the collarette ring
     collaretteVerts: 48,
-    foldCount: 90,         // ciliary-zone circumferential arc segments
+    foldCount: 115,         // ciliary-zone circumferential arc segments
     cryptCount: 14,        // dark elongated pits (spec: 8–20)
     ruffWidth: 0.045,      // pupillary ruff, fraction of pupil→limbus span
     limbalBase: 0.10,      // §7.3 LIMBAL_BASE, fraction of iris radius
@@ -64,7 +64,7 @@ const CONFIG = {
   // ---- Rendering ----
   catchlightOffset: 0.38,  // catchlight offset from iris center, fraction of iris radius
   catchlightSize: 0.15,    // catchlight radius, fraction of iris radius
-  lidShadowAlpha: 0.30,    // §7.2 cue 3: upper lid darkens the top of the eyeball
+  lidShadowAlpha: 0.38,    // §7.2 cue 3: upper lid darkens the top of the eyeball
   lidShadowDepth: 0.35,    // shadow reach, fraction of eye height
   glowBaseFrac: 0.75,      // glow radius = eyeW * (base + glowRadius * spanFrac)
   glowSpanFrac: 1.3,

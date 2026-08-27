@@ -63,7 +63,7 @@ const Iris = (() => {
         th0: rand() * TAU2,
         dth: (0.06 + rand() * 0.22) * TAU2 * 0.25, // 5°–25° arcs
         w: 0.004 + rand() * 0.008,
-        alpha: 0.10 + rand() * 0.22,
+        alpha: 0.16 + rand() * 0.28,
         dl: (rand() < 0.5 ? -1 : 1) * (0.05 + rand() * 0.08),
       });
     }
