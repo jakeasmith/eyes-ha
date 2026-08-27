@@ -82,8 +82,8 @@ const CONFIG = {
   // ---- One-shots (§10.2, §10.3) and behavior rules (§13) ----
   oneshot: {
     lungeAttack: 0.12,    // the one place a hard motion is correct
-    lungeHold: 0.4,
-    lungeRetreat: 0.6,
+    lungeHold: 1.0,
+    lungeRetreat: 1.0,
     lungeEyeScale: 2.3,
     lungeJitter: 0.9,
     vanishHoldMin: 2.5,   // fully black
