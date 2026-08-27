@@ -139,7 +139,7 @@ const Renderer = (() => {
       const gy = d.gazeY < 0
         ? d.gazeY * CONFIG.gazeTravelUp * h
         : d.gazeY * CONFIG.gazeTravelUp * CONFIG.gazeDownBoost * h;
-      const tex = Iris.raster(d.pupilSize, d.irisHue, d.irisSat, d.irisLight);
+      const tex = Iris.raster(isR ? 1 : 0, d.pupilSize, d.irisHue, d.irisSat, d.irisLight);
       ctx.drawImage(tex, gx - irisR, gy - irisR, irisD, irisD);
 
       // Lid shadow (§7.2 cue 3): the upper lid darkens the top of the eyeball.

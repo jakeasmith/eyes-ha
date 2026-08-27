@@ -15,17 +15,24 @@
 // no cache structure); in steady state each frame is one drawImage.
 
 const Iris = (() => {
-  let list = null;
-  let canvas = null;
-  let ctx = null;
-  let lastKey = '';
+  // Two independent structures — a real pair's irises are similar but never
+  // identical. Each eye gets its own seeded display list and raster.
+  const eyes = [
+    { list: null, canvas: null, ctx: null, lastKey: '' },
+    { list: null, canvas: null, ctx: null, lastKey: '' },
+  ];
 
   const TAU2 = Math.PI * 2;
 
   function generate() {
-    const rand = mulberry32(SEED ^ 0x1815);
+    generateOne(eyes[0], SEED ^ 0x1815);
+    generateOne(eyes[1], SEED ^ 0xC3A7);
+  }
+
+  function generateOne(eye, seed) {
+    const rand = mulberry32(seed);
     const C = CONFIG.iris;
-    list = { striations: [], collarette: [], folds: [], crypts: [] };
+    const list = { striations: [], collarette: [], folds: [], crypts: [] };
 
     // §7.1(2) pupillary zone: 40–70 tapered radial striations, randomized
     // angle/length/alpha, brightest near the collarette.
@@ -74,7 +81,8 @@ const Iris = (() => {
       });
     }
 
-    lastKey = ''; // force re-raster
+    eye.list = list;
+    eye.lastKey = ''; // force re-raster
   }
 
   function hsl(h, s, l, a) {
@@ -83,19 +91,23 @@ const Iris = (() => {
 
   const clamp01 = (v) => Math.min(1, Math.max(0, v));
 
-  // pupilSize: fraction of iris radius (§8). Returns the cached canvas.
-  function raster(pupilSize, hue, sat, light) {
+  // pupilSize: fraction of iris radius (§8). Returns the cached canvas for
+  // the given eye (0 = left, 1 = right).
+  function raster(eyeIndex, pupilSize, hue, sat, light) {
+    const eye = eyes[eyeIndex];
     const key = `${Math.round(pupilSize * 64)}|${Math.round(hue)}|${Math.round(sat * 100)}|${Math.round(light * 100)}`;
-    if (key === lastKey && canvas) return canvas;
-    lastKey = key;
+    if (key === eye.lastKey && eye.canvas) return eye.canvas;
+    eye.lastKey = key;
 
     const size = CONFIG.iris.texSize;
-    if (!canvas) {
-      canvas = document.createElement('canvas');
-      canvas.width = size;
-      canvas.height = size;
-      ctx = canvas.getContext('2d');
+    if (!eye.canvas) {
+      eye.canvas = document.createElement('canvas');
+      eye.canvas.width = size;
+      eye.canvas.height = size;
+      eye.ctx = eye.canvas.getContext('2d');
     }
+    const ctx = eye.ctx;
+    const list = eye.list;
     const c = size / 2;
     const R = c * 0.985;             // limbus radius in texture px
     const pupilR = pupilSize * R;
@@ -213,8 +225,8 @@ const Iris = (() => {
     ctx.stroke();
 
     ctx.restore();
-    return canvas;
+    return eye.canvas;
   }
 
-  return { generate, raster, invalidate: () => { lastKey = ''; } };
+  return { generate, raster, invalidate: () => { eyes[0].lastKey = ''; eyes[1].lastKey = ''; } };
 })();
