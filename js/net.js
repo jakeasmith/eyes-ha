@@ -8,6 +8,7 @@
 
 const Net = (() => {
   let client = null;
+  let initialized = false;
   let base = 'eyes';
   // §13.4: the app only stores and echoes the auto switch; HA automations
   // check it as a condition. No app-side gating logic.
@@ -34,6 +35,8 @@ const Net = (() => {
   }
 
   function init() {
+    if (initialized) return; // a doubled init would register a second client
+    initialized = true;
     const { url, username, password } = config();
     if (!url) {
       console.warn('MQTT off: no broker URL (config.js or ?broker=)');
@@ -52,6 +55,10 @@ const Net = (() => {
       // unavailable within seconds of the tab dying.
       will: { topic: `${base}/status`, payload: 'offline', retain: true, qos: 1 },
     });
+    // Clean goodbye: end() sends DISCONNECT, which suppresses the will, so
+    // a reload or navigation doesn't stamp retained offline over a healthy
+    // successor instance.
+    window.addEventListener('pagehide', () => { if (client) client.end(); });
     client.on('connect', onConnect);
     client.on('message', (t, p) => {
       try { onMessage(t, p.toString().trim()); }
@@ -66,6 +73,7 @@ const Net = (() => {
     client.subscribe([
       `${base}/preset/set`, `${base}/gaze/set`, `${base}/intensity/set`,
       `${base}/auto/set`, `${base}/trigger/set`,
+      `${base}/status`,       // self-heal: see the 'status' case below
       'homeassistant/status', // republish discovery when HA restarts
     ]);
     for (const k of Object.keys(lastEcho)) lastEcho[k] = null; // force re-echo
@@ -80,6 +88,13 @@ const Net = (() => {
       return;
     }
     switch (topic.slice(base.length + 1)) {
+      case 'status':
+        // Self-heal: if a stale instance's will stamped us offline while we
+        // are alive, re-assert. Reacting only to 'offline' prevents loops.
+        if (payload === 'offline' && client.connected) {
+          client.publish(`${base}/status`, 'online', { retain: true, qos: 1 });
+        }
+        break;
       case 'preset/set':
         if (PRESETS[payload]) Engine.applyPreset(payload);
         else console.warn('unknown preset', payload);
