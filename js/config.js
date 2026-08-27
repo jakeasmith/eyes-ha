@@ -76,6 +76,10 @@ const CONFIG = {
 //   'pupil' — asymmetric attack/release (§5.2)
 //   'snap'  — takes effect immediately (meta-params that govern smoothing itself)
 // circular: interpolate along the shorter arc (§5.3).
+// persist: survives preset changes when the preset omits the key (positional
+// state owned by gaze zones / Vanish, and the pupil dynamics constants).
+// Non-persistent keys a preset omits reset to DEFAULTS — a preset is a
+// complete expression, not a diff against whatever came before.
 const PARAM_META = {
   lidUpper:            { min: 0,    max: 1,    smoothing: 'tau' },
   lidLower:            { min: 0,    max: 1,    smoothing: 'tau' },
@@ -83,11 +87,11 @@ const PARAM_META = {
   pupilSize:           { min: 0.12, max: 0.65, smoothing: 'pupil' },
   irisSize:            { min: 0.3,  max: 0.6,  smoothing: 'tau' },
   eyeScale:            { min: 0.7,  max: 2.5,  smoothing: 'tau' },
-  separation:          { min: 0.8,  max: 1.4,  smoothing: 'tau' },
-  posX:                { min: -1,   max: 1,    smoothing: 'tau' },
-  posY:                { min: -1,   max: 1,    smoothing: 'tau' },
-  gazeX:               { min: -1,   max: 1,    smoothing: 'tau' },
-  gazeY:               { min: -1,   max: 1,    smoothing: 'tau' },
+  separation:          { min: 0.8,  max: 1.4,  smoothing: 'tau', persist: true },
+  posX:                { min: -1,   max: 1,    smoothing: 'tau', persist: true },
+  posY:                { min: -1,   max: 1,    smoothing: 'tau', persist: true },
+  gazeX:               { min: -1,   max: 1,    smoothing: 'tau', persist: true },
+  gazeY:               { min: -1,   max: 1,    smoothing: 'tau', persist: true },
   headTilt:            { min: -15,  max: 15,   smoothing: 'tau' },
   browAngle:           { min: -30,  max: 30,   smoothing: 'tau' },
   browHeight:          { min: -1,   max: 1,    smoothing: 'tau' },
@@ -108,12 +112,12 @@ const PARAM_META = {
   blinkRate:           { min: 0,    max: 30,   smoothing: 'tau' },
   driftSpeed:          { min: 0,    max: 2,    smoothing: 'tau' },
   tau:                 { min: 80,   max: 600,  smoothing: 'snap' },
-  pupilAttackMs:       { min: 120,  max: 400,  smoothing: 'snap' },
-  pupilReleaseMs:      { min: 800,  max: 3000, smoothing: 'snap' },
+  pupilAttackMs:       { min: 120,  max: 400,  smoothing: 'snap', persist: true },
+  pupilReleaseMs:      { min: 800,  max: 3000, smoothing: 'snap', persist: true },
 };
 
-// Full baseline state. Presets are partial overlays on top of this; keys a
-// preset omits (posX/posY, gaze, lidAsym…) persist across preset changes.
+// Full baseline state. On a preset change, keys the preset omits reset to
+// these values — except PARAM_META persist keys, which carry across.
 const DEFAULTS = {
   lidUpper: 0.12, lidLower: 0.05, lidAsym: 0.05,
   pupilSize: 0.30, irisSize: 0.42, eyeScale: 1.0, separation: 1.0,

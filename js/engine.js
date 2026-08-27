@@ -24,8 +24,11 @@ const Engine = (() => {
     const p = PRESETS[name];
     if (!p) return;
     activePreset = name;
-    for (const k of Object.keys(p)) {
-      target[k] = clampKey(k, p[k]);
+    for (const k of Object.keys(PARAM_META)) {
+      // A preset is a complete expression: omitted keys fall back to
+      // DEFAULTS, except persist keys (position, gaze, pupil dynamics).
+      if (k in p) target[k] = clampKey(k, p[k]);
+      else if (!PARAM_META[k].persist) target[k] = DEFAULTS[k];
       // Meta-params that govern smoothing itself take effect immediately —
       // the new preset's transition should run at the new preset's tau.
       if (PARAM_META[k].smoothing === 'snap') current[k] = target[k];
