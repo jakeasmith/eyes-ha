@@ -10,6 +10,8 @@ const Net = (() => {
   let client = null;
   let initialized = false;
   let base = 'eyes';
+  let deviceId = 'halloween_eyes';
+  let deviceName = 'Halloween Eyes';
   // §13.4: the app only stores and echoes the auto switch; HA automations
   // check it as a condition. No app-side gating logic.
   let autoState = 'OFF';
@@ -19,6 +21,10 @@ const Net = (() => {
     const cfg = window.EYES_CONFIG || {};
     const qp = new URLSearchParams(location.search);
     base = qp.get('base') || cfg.baseTopic || 'eyes';
+    // HA identity: the id keys the discovery topic and every unique_id, so
+    // changing it creates a NEW device in HA rather than renaming this one.
+    deviceId = cfg.deviceId || 'halloween_eyes';
+    deviceName = cfg.deviceName || 'Halloween Eyes';
     // Priority: query param, config.js, same-origin /mqtt path when the page
     // is HTTPS (the tailscale serve layout from §11.1). On an HTTPS origin an
     // insecure ws:// URL would be blocked as mixed content (§4.3) — ignore it
@@ -152,62 +158,62 @@ const Net = (() => {
     const t = (s) => `${base}/${s}`;
     const payload = {
       dev: {
-        ids: 'halloween_eyes', name: 'Halloween Eyes',
-        mf: 'Haunted Labs', mdl: 'Procedural Eyes', sw: '1.0',
+        ids: deviceId, name: deviceName,
+        mf: 'Jake A. Smith', mdl: 'Haunted Eyes', sw: '1.0',
       },
       o: { name: 'halloween-eyes', sw: '1.0' },
       avty_t: t('status'),
       cmps: {
         preset: {
-          p: 'select', name: 'Preset', unique_id: 'halloween_eyes_preset',
+          p: 'select', name: 'Preset', unique_id: `${deviceId}_preset`,
           command_topic: t('preset/set'), state_topic: t('preset'),
           options: PRESET_KEYS, // resting presets only; one-shots are buttons
         },
         gaze: {
-          p: 'select', name: 'Gaze Zone', unique_id: 'halloween_eyes_gaze',
+          p: 'select', name: 'Gaze Zone', unique_id: `${deviceId}_gaze`,
           command_topic: t('gaze/set'), state_topic: t('gaze'),
           options: Object.keys(ZONES),
         },
         intensity: {
-          p: 'number', name: 'Intensity', unique_id: 'halloween_eyes_intensity',
+          p: 'number', name: 'Intensity', unique_id: `${deviceId}_intensity`,
           command_topic: t('intensity/set'), state_topic: t('intensity'),
           min: 0, max: 1, step: 0.05, mode: 'slider',
         },
         auto: {
-          p: 'switch', name: 'Auto Escalate', unique_id: 'halloween_eyes_auto',
+          p: 'switch', name: 'Auto Escalate', unique_id: `${deviceId}_auto`,
           command_topic: t('auto/set'), state_topic: t('auto'),
         },
         btn_notice: {
-          p: 'button', name: 'Notice', unique_id: 'halloween_eyes_notice',
+          p: 'button', name: 'Notice', unique_id: `${deviceId}_notice`,
           command_topic: t('trigger/set'), payload_press: 'notice',
         },
         btn_lunge: {
-          p: 'button', name: 'Lunge', unique_id: 'halloween_eyes_lunge',
+          p: 'button', name: 'Lunge', unique_id: `${deviceId}_lunge`,
           command_topic: t('trigger/set'), payload_press: 'lunge',
         },
         btn_vanish: {
-          p: 'button', name: 'Vanish', unique_id: 'halloween_eyes_vanish',
+          p: 'button', name: 'Vanish', unique_id: `${deviceId}_vanish`,
           command_topic: t('trigger/set'), payload_press: 'vanish',
         },
         btn_drop: {
-          p: 'button', name: 'Drop', unique_id: 'halloween_eyes_drop',
+          p: 'button', name: 'Drop', unique_id: `${deviceId}_drop`,
           command_topic: t('trigger/set'), payload_press: 'drop',
         },
         btn_gentle: {
-          p: 'button', name: 'Gentle', unique_id: 'halloween_eyes_gentle',
+          p: 'button', name: 'Gentle', unique_id: `${deviceId}_gentle`,
           command_topic: t('preset/set'), payload_press: 'gentle',
         },
         btn_sleep: {
-          p: 'button', name: 'Sleep', unique_id: 'halloween_eyes_sleep',
+          p: 'button', name: 'Sleep', unique_id: `${deviceId}_sleep`,
           command_topic: t('trigger/set'), payload_press: 'sleep',
         },
         current: {
-          p: 'sensor', name: 'Current Preset', unique_id: 'halloween_eyes_current',
+          p: 'sensor', name: 'Current Preset', unique_id: `${deviceId}_current`,
           state_topic: t('preset'),
         },
       },
     };
-    client.publish('homeassistant/device/halloween_eyes/config',
+    client.publish(`homeassistant/device/${deviceId}/config`,
       JSON.stringify(payload), { retain: true, qos: 1 });
   }
 

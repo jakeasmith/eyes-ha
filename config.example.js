@@ -6,4 +6,9 @@ window.EYES_CONFIG = {
   username: 'eyes',
   password: 'CHANGE_ME',
   baseTopic: 'eyes',
+  // Optional HA identity. deviceId keys the discovery topic and entity
+  // unique_ids (changing it creates a new HA device); deviceName is the
+  // display name on the device card.
+  deviceId: 'halloween_eyes',
+  deviceName: 'Halloween Eyes',
 };
