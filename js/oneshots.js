@@ -12,6 +12,8 @@ const Oneshots = (() => {
   let lungeTl = null;
   let vanishTl = null;
   let blackout = false; // §10.3 hold: nothing rendered — checked by main loop
+  let lungeHeld = false;      // Shift-held lunge: holds until released
+  let heldPrevPupil = null;
 
   const hasGsap = () => {
     if (typeof gsap !== 'undefined') return true;
@@ -25,8 +27,45 @@ const Oneshots = (() => {
   // ---- Lunge (§10.2) ------------------------------------------------------
   const LUNGE_KEYS = ['lidUpper', 'eyeScale', 'gazeX', 'gazeY', 'jitter'];
 
+  // Attack tweens shared by both lunge modes.
+  function lungeAttack(tlVars) {
+    const O = CONFIG.oneshot;
+    const cur = Engine.current;
+    const z = ZONES[Engine.activeZone] || ZONES.away;
+    lock(LUNGE_KEYS);
+    return gsap.timeline(tlVars)
+      .to(cur, { lidUpper: 1.0, eyeScale: O.lungeEyeScale, duration: O.lungeAttack, ease: 'power3.out' }, 0)
+      .to(cur, { gazeX: z.gazeX, gazeY: z.gazeY, duration: O.lungeAttack, ease: 'power3.out' }, 0)
+      .set(cur, { jitter: O.lungeJitter }, 0);
+  }
+
+  // Held lunge: attack on Shift down, hold for as long as it's held.
+  function lungeStart() {
+    if (!hasGsap()) return;
+    if (lungeHeld || (lungeTl && lungeTl.isActive())) return;
+    lungeHeld = true;
+    heldPrevPupil = Engine.target.pupilSize;
+    Engine.target.pupilSize = PARAM_META.pupilSize.max;
+    lungeTl = lungeAttack({});
+  }
+
+  // Release: unlock and let the engine smooth everything home to the
+  // still-active preset — "back to normal" is wherever we lunged from.
+  function lungeEnd() {
+    if (!lungeHeld) return;
+    lungeHeld = false;
+    if (lungeTl) { lungeTl.kill(); lungeTl = null; }
+    unlock(LUNGE_KEYS);
+    // Restore the pupil target only if nothing else (a preset change mid-
+    // hold) already rewrote it; recovery runs on the slow §5.2 release.
+    if (Engine.target.pupilSize === PARAM_META.pupilSize.max) {
+      Engine.target.pupilSize = heldPrevPupil;
+    }
+  }
+
   function lunge() {
     if (!hasGsap()) return;
+    if (lungeHeld) return; // a held lunge is already in charge
     // Idempotent: firing mid-lunge restarts the hold timer, never queues a
     // second. Mid-attack the hold hasn't started, so there is nothing to do.
     if (lungeTl && lungeTl.isActive()) {
@@ -36,16 +75,11 @@ const Oneshots = (() => {
     const O = CONFIG.oneshot;
     const cur = Engine.current;
     const W = PRESETS.watching;
-    const z = ZONES[Engine.activeZone] || ZONES.away;
-    lock(LUNGE_KEYS);
     // Pupils snap wide through the ENGINE so §5.2 owns the asymmetry:
     // attack now, slow release when watching's value is restored below.
     Engine.target.pupilSize = PARAM_META.pupilSize.max;
 
-    lungeTl = gsap.timeline({ onComplete: () => { unlock(LUNGE_KEYS); Engine.applyPreset('watching'); } })
-      .to(cur, { lidUpper: 1.0, eyeScale: O.lungeEyeScale, duration: O.lungeAttack, ease: 'power3.out' }, 0)
-      .to(cur, { gazeX: z.gazeX, gazeY: z.gazeY, duration: O.lungeAttack, ease: 'power3.out' }, 0)
-      .set(cur, { jitter: O.lungeJitter }, 0)
+    lungeTl = lungeAttack({ onComplete: () => { unlock(LUNGE_KEYS); Engine.applyPreset('watching'); } })
       .addLabel('hold', O.lungeAttack)
       .to({}, { duration: O.lungeHold }, 'hold')
       .to(cur, { lidUpper: W.lidUpper, eyeScale: W.eyeScale, jitter: W.jitter, duration: O.lungeRetreat, ease: 'power2.inOut' });
@@ -85,6 +119,7 @@ const Oneshots = (() => {
   function cancelAll() {
     if (lungeTl) { lungeTl.kill(); lungeTl = null; }
     if (vanishTl) { vanishTl.kill(); vanishTl = null; }
+    lungeHeld = false;
     Engine.lockedKeys.clear();
     blackout = false;
   }
@@ -93,7 +128,7 @@ const Oneshots = (() => {
   function sleep() { cancelAll(); Engine.applyPreset('dormant'); }
 
   return {
-    lunge, vanish, gentle, sleep, cancelAll,
+    lunge, lungeStart, lungeEnd, vanish, gentle, sleep, cancelAll,
     get blackout() { return blackout; },
   };
 })();

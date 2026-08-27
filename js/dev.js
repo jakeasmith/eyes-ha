@@ -64,6 +64,7 @@ const Dev = (() => {
     ['g', 'gentle (cancels all)', () => { Oneshots.gentle(); refresh(); }],
     ['s', 'sleep', () => { Oneshots.sleep(); refresh(); }],
     ['f', 'lunge', () => Oneshots.lunge()],
+    ['shift', 'lunge while held', null],
     ['v', 'vanish', () => Oneshots.vanish()],
     ['e', 'next gaze zone', cycleZone],
     ['a', 'intensity +', () => bumpIntensity(0.05)],
@@ -72,7 +73,7 @@ const Dev = (() => {
     ['m', 'mirror', () => document.body.classList.toggle('mirror')],
     ['?', 'this help', toggleHelp],
   ];
-  const ACTIONS = new Map(BINDINGS.map(([k, , fn]) => [k, fn]));
+  const ACTIONS = new Map(BINDINGS.filter(([, , fn]) => fn).map(([k, , fn]) => [k, fn]));
 
   function buildPane() {
     pane = new Tweakpane.Pane({ title: 'eyes' });
@@ -133,9 +134,17 @@ const Dev = (() => {
   }
 
   function onKey(e) {
+    if (e.key === 'Shift') {
+      if (!e.repeat) Oneshots.lungeStart();
+      return;
+    }
     if (e.key === '/' && e.shiftKey) { toggleHelp(); return; } // '?' variant
     const fn = ACTIONS.get(e.key.toLowerCase());
     if (fn) fn();
+  }
+
+  function onKeyUp(e) {
+    if (e.key === 'Shift') Oneshots.lungeEnd();
   }
 
   function frame() {
@@ -144,6 +153,9 @@ const Dev = (() => {
 
   function init() {
     window.addEventListener('keydown', onKey);
+    window.addEventListener('keyup', onKeyUp);
+    // A missed keyup (focus lost mid-hold) must not leave a lunge stuck.
+    window.addEventListener('blur', () => Oneshots.lungeEnd());
     if (CONFIG.mirror) document.body.classList.add('mirror');
     buildHelp();
   }
