@@ -19,9 +19,17 @@ const Net = (() => {
     const qp = new URLSearchParams(location.search);
     base = qp.get('base') || cfg.baseTopic || 'eyes';
     // Priority: query param, config.js, same-origin /mqtt path when the page
-    // is HTTPS (the tailscale serve layout from §11.1).
-    const url = qp.get('broker') || cfg.brokerUrl
-      || (location.protocol === 'https:' ? `wss://${location.host}/mqtt` : null);
+    // is HTTPS (the tailscale serve layout from §11.1). On an HTTPS origin an
+    // insecure ws:// URL would be blocked as mixed content (§4.3) — ignore it
+    // and use the same-origin proxy instead.
+    let url = qp.get('broker') || cfg.brokerUrl;
+    if (location.protocol === 'https:') {
+      if (url && url.startsWith('ws://')) {
+        console.warn(`MQTT: ignoring insecure broker URL ${url} on HTTPS page`);
+        url = null;
+      }
+      url = url || `wss://${location.host}/mqtt`;
+    }
     return { url, username: cfg.username, password: cfg.password };
   }
 
