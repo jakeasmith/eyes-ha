@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eyes</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    overflow: hidden;
+    height: 100%;
+  }
+  body { cursor: none; }
+  body.dev-cursor { cursor: default; }
+  #stage {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  body.mirror #stage { transform: scaleX(-1); }
+</style>
+<!-- Dev-only tools. The page must render fine if these fail to load. -->
+<script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.10/dist/tweakpane.min.js"
+        integrity="sha384-uYMPXLUnhfw0j6e3zxNPK3rUYRZ/ix65z2pvk73hNo/p6LEzvdXo5cA3CCBs25az"
+        crossorigin="anonymous" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/stats.js@0.17.0/build/stats.min.js"
+        integrity="sha384-6Bk69P4Sz9X/z+xSnouMa3aujEM8KgF0+RYnGGZOemLXHBlrVuLmyE0N46Ih5MvH"
+        crossorigin="anonymous" defer></script>
+</head>
+<body>
+<canvas id="stage"></canvas>
+
+<!-- Library seam (SPEC §19): config → rng → viewport → iris → engine → life → renderer -->
+<script src="js/config.js"></script>
+<script src="js/rng.js"></script>
+<script src="js/viewport.js"></script>
+<script src="js/iris.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/life.js"></script>
+<script src="js/renderer.js"></script>
+<!-- App side: dev harness + boot -->
+<script src="js/dev.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
