@@ -35,6 +35,9 @@
   }
   body.help #help { display: block; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"
+        integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt"
+        crossorigin="anonymous" defer></script>
 <!-- Dev-only tools. The page must render fine if these fail to load. -->
 <script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.10/dist/tweakpane.min.js"
         integrity="sha384-uYMPXLUnhfw0j6e3zxNPK3rUYRZ/ix65z2pvk73hNo/p6LEzvdXo5cA3CCBs25az"
@@ -54,7 +57,8 @@
 <script src="js/engine.js"></script>
 <script src="js/life.js"></script>
 <script src="js/renderer.js"></script>
-<!-- App side: dev harness + boot -->
+<!-- App side: one-shots + dev harness + boot -->
+<script src="js/oneshots.js"></script>
 <script src="js/dev.js"></script>
 <script src="js/main.js"></script>
 </body>

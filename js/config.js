@@ -79,6 +79,21 @@ const CONFIG = {
     tiltSway: 1.3,                  // degrees of slow head-tilt sway
   },
 
+  // ---- One-shots (§10.2, §10.3) and behavior rules (§13) ----
+  oneshot: {
+    lungeAttack: 0.12,    // the one place a hard motion is correct
+    lungeHold: 0.4,
+    lungeRetreat: 0.6,
+    lungeEyeScale: 2.3,
+    lungeJitter: 0.9,
+    vanishHoldMin: 2.5,   // fully black
+    vanishHoldMax: 5,
+    vanishJumpMin: 0.3,   // posY jump within the envelope
+    vanishJumpMax: 0.8,
+    reopenSec: 0.25,
+  },
+  presetTimeoutSec: 90,   // narrowed/rage auto-return to watching (§13.1)
+
   // ---- Per-eye asymmetry ----
   lidAsymBrowFactor: 2.0,  // lidAsym also raises the right brow (curious: "one brow raised")
 

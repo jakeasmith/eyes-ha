@@ -240,11 +240,12 @@ const Renderer = (() => {
 
   // -------------------------------------------------------------------- frame
 
-  function render(d) {
+  function render(d, blackout) {
     const m = Viewport.metrics;
     ctx.setTransform(m.dpr, 0, 0, m.dpr, 0, 0);
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, m.vw, m.vh);
+    if (blackout) return; // Vanish hold (§10.3): nothing rendered
 
     const w = m.eyeW * d.eyeScale;
     const h = w * CONFIG.eyeAspect;

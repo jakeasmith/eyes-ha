@@ -19,7 +19,7 @@
 
     Engine.step(dt);
     Life.apply(dt, Engine.current, Engine.display, Engine.intensity);
-    Renderer.render(Engine.display);
+    Renderer.render(Engine.display, Oneshots.blackout);
     Dev.frame();
 
     requestAnimationFrame(frame);

@@ -20,6 +20,8 @@ const Engine = (() => {
   // kills the scaled keys, 0.5 is neutral, 1 doubles them (range-clamped).
   let intensity = 0.5;
   let intensityTarget = 0.5;
+  // §13.1: seconds since the last external command; narrowed/rage time out.
+  let idleT = 0;
 
   const clampKey = (k, v) => {
     const m = PARAM_META[k];
@@ -30,6 +32,7 @@ const Engine = (() => {
     const p = PRESETS[name];
     if (!p) return;
     activePreset = name;
+    idleT = 0;
     for (const k of Object.keys(PARAM_META)) {
       // A preset is a complete expression: omitted keys fall back to
       // DEFAULTS, except persist keys (position, gaze, pupil dynamics).
@@ -45,18 +48,25 @@ const Engine = (() => {
     const z = ZONES[name];
     if (!z) return;
     activeZone = name;
+    idleT = 0;
     target.gazeX = clampKey('gazeX', z.gazeX);
     target.gazeY = clampKey('gazeY', z.gazeY);
   }
 
   function setIntensity(v) {
     intensityTarget = Math.min(1, Math.max(0, v));
+    idleT = 0;
   }
 
   // Frame-rate-independent exponential smoothing (§5.1); dt in seconds.
   function step(dt) {
     const dtMs = dt * 1000;
     intensity += (intensityTarget - intensity) * (1 - Math.exp(-dtMs / 250));
+    // §13.1: narrowed and rage return to watching after 90s untouched.
+    idleT += dt;
+    if ((activePreset === 'narrowed' || activePreset === 'rage') && idleT > CONFIG.presetTimeoutSec) {
+      applyPreset('watching');
+    }
     for (const k of Object.keys(PARAM_META)) {
       if (lockedKeys.has(k)) continue;
       const meta = PARAM_META[k];

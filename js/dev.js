@@ -77,7 +77,8 @@ const Dev = (() => {
     const el = document.createElement('div');
     el.id = 'help';
     const rows = PRESET_KEYS.map((name, i) => [String(i + 1), name]);
-    rows.push(['\u2191\u2193', 'intensity'], ['`', 'tuning panel'], ['m', 'mirror'], ['?', 'this help']);
+    rows.push(['l', 'lunge'], ['v', 'vanish'], ['g', 'gentle (cancels all)'], ['s', 'sleep'],
+               ['\u2191\u2193', 'intensity'], ['`', 'tuning panel'], ['m', 'mirror'], ['?', 'this help']);
     el.textContent = rows.map(([k, label]) => `${k}  ${label}`).join('\n');
     document.body.appendChild(el);
   }
@@ -92,6 +93,11 @@ const Dev = (() => {
       document.body.classList.toggle('mirror');
       return;
     }
+    const k = e.key.toLowerCase();
+    if (k === 'l') { Oneshots.lunge(); return; }
+    if (k === 'v') { Oneshots.vanish(); return; }
+    if (k === 'g') { Oneshots.gentle(); if (pane) pane.refresh(); return; }
+    if (k === 's') { Oneshots.sleep(); if (pane) pane.refresh(); return; }
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
       devState.intensity = Math.min(1, Math.max(0,
         Engine.intensityTarget + (e.key === 'ArrowUp' ? 0.05 : -0.05)));
