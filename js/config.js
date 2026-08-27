@@ -14,6 +14,7 @@ const CONFIG = {
   eyeAspect: 0.60,     // eye height / eye width at fully open lids
   gapFrac: 0.45,       // gap between eyes = gapFrac * eyeW * separation
   marginFrac: 0.03,    // envelope margin, fraction of the smaller dimension
+  anchorY: 1 / 3,      // resting vertical anchor: pair center sits here at posY = 0
 
   // ---- Gaze geometry ----
   gazeTravelX: 0.17,   // max horizontal iris offset, fraction of eye width

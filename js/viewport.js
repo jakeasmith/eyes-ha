@@ -6,8 +6,10 @@
 const Viewport = (() => {
   const metrics = {
     vw: 0, vh: 0, dpr: 1,
-    eyeW: 0, eyeH: 0,     // baseline eye size at eyeScale = 1
-    travelX: 0, travelY: 0, // half-range of posX / posY in px (0 = axis clamped)
+    eyeW: 0, eyeH: 0,        // baseline eye size at eyeScale = 1
+    anchorY: 0,              // resting pair-center y (posY = 0)
+    travelX: 0,              // half-range of posX in px (0 = axis clamped)
+    travelYUp: 0, travelYDown: 0, // posY range above/below the anchor
   };
 
   function compute() {
@@ -28,7 +30,11 @@ const Viewport = (() => {
     metrics.eyeW = eyeW;
     metrics.eyeH = eyeH;
     metrics.travelX = Math.max(0, vw / 2 - pairHalfW - margin);
-    metrics.travelY = Math.max(0, vh / 2 - eyeH * 0.9 - margin);
+    // Vertical travel is asymmetric around the anchor: posY -1..1 spans
+    // whatever room exists above vs. below it.
+    metrics.anchorY = vh * CONFIG.anchorY;
+    metrics.travelYUp = Math.max(0, metrics.anchorY - eyeH * 0.9 - margin);
+    metrics.travelYDown = Math.max(0, vh - metrics.anchorY - eyeH * 0.9 - margin);
     return metrics;
   }
 

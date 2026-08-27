@@ -241,7 +241,7 @@ const Renderer = (() => {
     const h = w * CONFIG.eyeAspect;
     const centerDist = w * (1 + CONFIG.gapFrac * d.separation);
     const cx = m.vw / 2 + d.posX * m.travelX;
-    const cy = m.vh / 2 + d.posY * m.travelY + (d.nodY || 0) * h;
+    const cy = m.anchorY + d.posY * (d.posY < 0 ? m.travelYUp : m.travelYDown) + (d.nodY || 0) * h;
 
     ctx.save();
     ctx.translate(cx, cy);
