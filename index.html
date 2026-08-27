@@ -20,6 +20,20 @@
     height: 100vh;
   }
   body.mirror #stage { transform: scaleX(-1); }
+  #help {
+    display: none;
+    position: fixed;
+    left: 14px;
+    bottom: 14px;
+    z-index: 10;
+    font: 12px/1.7 ui-monospace, monospace;
+    color: rgba(200, 190, 175, 0.75);
+    background: rgba(10, 8, 6, 0.6);
+    padding: 8px 12px;
+    border-radius: 4px;
+    white-space: pre;
+  }
+  body.help #help { display: block; }
 </style>
 <!-- Dev-only tools. The page must render fine if these fail to load. -->
 <script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.10/dist/tweakpane.min.js"

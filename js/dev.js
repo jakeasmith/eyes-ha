@@ -63,8 +63,21 @@ const Dev = (() => {
     document.body.classList.toggle('dev-cursor', visible);
   }
 
+  function buildHelp() {
+    const el = document.createElement('div');
+    el.id = 'help';
+    const rows = PRESET_KEYS.map((name, i) => [String(i + 1), name]);
+    rows.push(['`', 'tuning panel'], ['m', 'mirror'], ['?', 'this help']);
+    el.textContent = rows.map(([k, label]) => `${k}  ${label}`).join('\n');
+    document.body.appendChild(el);
+  }
+
   function onKey(e) {
     if (e.key === '`') { toggle(); return; }
+    if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+      document.body.classList.toggle('help');
+      return;
+    }
     if (e.key === 'm' || e.key === 'M') {
       document.body.classList.toggle('mirror');
       return;
@@ -83,6 +96,7 @@ const Dev = (() => {
   function init() {
     window.addEventListener('keydown', onKey);
     if (CONFIG.mirror) document.body.classList.add('mirror');
+    buildHelp();
   }
 
   return { init, frame };
