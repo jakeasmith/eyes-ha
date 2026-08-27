@@ -6,6 +6,15 @@
 // reproducible between reloads so tuning is possible (SPEC §7.1).
 const SEED = 0xE7E51;
 
+// ---- Gaze zones (§9.1): discrete named targets; geometry-dependent ----
+const ZONES = {
+  sidewalk: { gazeX: -0.6, gazeY: 0.35 },
+  walkway:  { gazeX: -0.2, gazeY: 0.6 },
+  porch:    { gazeX: 0.1,  gazeY: 0.85 },
+  door:     { gazeX: 0.5,  gazeY: 0.9 },
+  away:     { gazeX: 0.0,  gazeY: -0.3 },
+};
+
 const CONFIG = {
   mirror: false, // §4.2 MIRROR flag; 'm' toggles at runtime
 
@@ -20,6 +29,14 @@ const CONFIG = {
   gazeTravelX: 0.17,   // max horizontal iris offset, fraction of eye width
   gazeTravelUp: 0.20,  // max upward iris offset, fraction of eye height
   gazeDownBoost: 2.0,  // downward travel = up travel × this (§8: down range ~2× up)
+
+  // ---- Lid–gaze coupling (§9.2): lids follow the pupil on down-gaze ----
+  coupling: {
+    lidUpperDrop: 0.35,  // lidUpper reduced by up to this × max(0, gazeY)
+    lidLowerRaise: 0.15, // lidLower raised by up to this × max(0, gazeY)
+    irisSquash: 0.12,    // vertical iris squash at full down-gaze
+    browDrop: 0.2,       // browHeight drop at full down-gaze
+  },
 
   // ---- Life layer (§6) ----
   // Saccade amplitudes are in gaze units (gazeX/gazeY space). One gaze unit

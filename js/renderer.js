@@ -102,11 +102,17 @@ const Renderer = (() => {
   function drawEye(d, isR, w, h) {
     const asym = isR ? d.lidAsym : 0;
     const blinkEnv = isR ? (d.blinkR ?? 1) : (d.blinkL ?? 1);
-    const open = clamp01(d.lidUpper + asym) * blinkEnv;
+    // Lid–gaze coupling (§9.2): on down-gaze the lids FOLLOW the pupil —
+    // upper lid drops, lower lid rises — so it reads as looking down at you,
+    // not as pupils parked at the bottom of a wide-open eye.
+    const down = Math.max(0, d.gazeY);
+    const C = CONFIG.coupling;
+    const open = clamp01(d.lidUpper + asym - C.lidUpperDrop * down) * blinkEnv;
+    const lidLower = clamp01(d.lidLower + C.lidLowerRaise * down);
 
     // Lid geometry: lower lid rests low and rises with lidLower; the upper
     // lid closes down to MEET the lower lid, so a blink actually shuts.
-    const yB = h * (0.06 + 0.30 * (1 - 0.7 * d.lidLower));
+    const yB = h * (0.06 + 0.30 * (1 - 0.7 * lidLower));
     const yT = yB - (yB + h * 0.50) * open;
 
     // Glow behind the eye (§7.5): additive, cached gradient.
@@ -140,7 +146,9 @@ const Renderer = (() => {
         ? d.gazeY * CONFIG.gazeTravelUp * h
         : d.gazeY * CONFIG.gazeTravelUp * CONFIG.gazeDownBoost * h;
       const tex = Iris.raster(isR ? 1 : 0, d.pupilSize, d.irisHue, d.irisSat, d.irisLight);
-      ctx.drawImage(tex, gx - irisR, gy - irisR, irisD, irisD);
+      // §9.2: iris ellipse squashes vertically on down-gaze.
+      const sy = 1 - C.irisSquash * down;
+      ctx.drawImage(tex, gx - irisR, gy - irisR * sy, irisD, irisD * sy);
 
       // Lid shadow (§7.2 cue 3): the upper lid darkens the top of the eyeball.
       const depth = h * CONFIG.lidShadowDepth;
@@ -202,7 +210,8 @@ const Renderer = (() => {
   function drawBrow(d, isR, w, h) {
     if (d.browVisible <= 0.01) return;
     const raise = isR ? d.lidAsym * CONFIG.lidAsymBrowFactor : 0;
-    const browH = Math.min(1.4, d.browHeight + raise);
+    const gazeDrop = CONFIG.coupling.browDrop * Math.max(0, d.gazeY); // §9.2
+    const browH = Math.min(1.4, d.browHeight + raise - gazeDrop);
     const cy = -h * (0.74 + 0.33 * browH);
 
     ctx.save();

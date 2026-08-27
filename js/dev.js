@@ -8,6 +8,7 @@ const Dev = (() => {
   let pane = null;
   let stats = null;
   let visible = false;
+  const devState = { intensity: 0.5, zone: 'away' };
 
   const GROUPS = {
     Lids: ['lidUpper', 'lidLower', 'lidAsym'],
@@ -31,7 +32,16 @@ const Dev = (() => {
         const m = PARAM_META[k];
         f.addInput(Engine.target, k, { min: m.min, max: m.max });
       }
+      if (title === 'Gaze') {
+        const opts = {};
+        for (const z of Object.keys(ZONES)) opts[z] = z;
+        f.addInput(devState, 'zone', { options: opts })
+          .on('change', (ev) => Engine.setGazeZone(ev.value));
+      }
     }
+
+    pane.addInput(devState, 'intensity', { min: 0, max: 1 })
+      .on('change', (ev) => Engine.setIntensity(ev.value));
 
     const fi = pane.addFolder({ title: 'Iris generation', expanded: false });
     for (const k of ['striationCount', 'striationAlpha', 'collaretteU', 'collaretteJag',
@@ -67,7 +77,7 @@ const Dev = (() => {
     const el = document.createElement('div');
     el.id = 'help';
     const rows = PRESET_KEYS.map((name, i) => [String(i + 1), name]);
-    rows.push(['`', 'tuning panel'], ['m', 'mirror'], ['?', 'this help']);
+    rows.push(['\u2191\u2193', 'intensity'], ['`', 'tuning panel'], ['m', 'mirror'], ['?', 'this help']);
     el.textContent = rows.map(([k, label]) => `${k}  ${label}`).join('\n');
     document.body.appendChild(el);
   }
@@ -80,6 +90,13 @@ const Dev = (() => {
     }
     if (e.key === 'm' || e.key === 'M') {
       document.body.classList.toggle('mirror');
+      return;
+    }
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      devState.intensity = Math.min(1, Math.max(0,
+        Engine.intensityTarget + (e.key === 'ArrowUp' ? 0.05 : -0.05)));
+      Engine.setIntensity(devState.intensity);
+      if (pane) pane.refresh();
       return;
     }
     const idx = parseInt(e.key, 10) - 1;

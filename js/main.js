@@ -18,7 +18,7 @@
     last = now;
 
     Engine.step(dt);
-    Life.apply(dt, Engine.current, Engine.display);
+    Life.apply(dt, Engine.current, Engine.display, Engine.intensity);
     Renderer.render(Engine.display);
     Dev.frame();
 

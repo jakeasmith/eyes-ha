@@ -110,13 +110,22 @@ const Life = (() => {
   // Pull a schedule in when its rate rises so a preset change reacts promptly.
   const capNext = (next, interval) => Math.min(next, t + interval * 2);
 
-  function apply(dt, cur, disp) {
+  function apply(dt, cur, disp, intensity) {
     t += dt;
     Object.assign(disp, cur);
 
+    // Intensity (§9.3): display-stage scaling, orthogonal to preset. 0.5 is
+    // the authored baseline (factor 1); 0 kills these keys, 1 doubles them.
+    const inten = intensity === undefined ? 0.5 : intensity;
+    const f = inten * 2;
+    for (const k of ['jitter', 'irisSat', 'microsaccadeRate', 'glowIntensity', 'driftSpeed']) {
+      const m = PARAM_META[k];
+      disp[k] = Math.min(m.max, Math.max(m.min, cur[k] * f));
+    }
+
     // ---- Microsaccades: always on — a staring creature is here (§6.1).
-    if (cur.microsaccadeRate > 0.05) {
-      const interval = 1 / cur.microsaccadeRate;
+    if (disp.microsaccadeRate > 0.05) {
+      const interval = 1 / disp.microsaccadeRate;
       micro.next = capNext(micro.next, interval);
       if (t >= micro.next) {
         const dy = fire(micro, CONFIG.microAmp, CONFIG.microAmp * 0.6);
@@ -146,7 +155,7 @@ const Life = (() => {
     const s = eased(scan);
 
     // ---- Jitter: high-frequency tremble, scaled by the jitter param.
-    const j = cur.jitter * CONFIG.jitterGaze;
+    const j = disp.jitter * CONFIG.jitterGaze;
     const jx = (jitterNoiseX(t * 9) * 2 - 1) * j;
     const jy = (jitterNoiseY(t * 9) * 2 - 1) * j;
 
@@ -205,7 +214,7 @@ const Life = (() => {
     }
 
     // ---- Drift (§6.4): brow value noise + breathing, scaled by driftSpeed.
-    const ds = cur.driftSpeed;
+    const ds = disp.driftSpeed;
     disp.browAngle += (browNoise(t * Math.max(ds, 0.01) / CONFIG.browNoisePeriod) * 2 - 1) * CONFIG.browNoiseDeg;
     const breathe = Math.sin((t / CONFIG.breathePeriod) * Math.PI * 2);
     disp.lidUpper = Math.max(0, Math.min(1, disp.lidUpper + breathe * CONFIG.breatheLidAmp * ds));
