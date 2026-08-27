@@ -66,6 +66,7 @@ const Dev = (() => {
     ['f', 'lunge', () => Oneshots.lunge()],
     ['shift', 'lunge while held', null],
     ['v', 'vanish', () => Oneshots.vanish()],
+    ['d', 'drop / rise', () => Oneshots.drop()],
     ['e', 'next gaze zone', cycleZone],
     ['a', 'intensity +', () => bumpIntensity(0.05)],
     ['z', 'intensity −', () => bumpIntensity(-0.05)],

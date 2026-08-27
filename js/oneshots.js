@@ -115,10 +115,47 @@ const Oneshots = (() => {
       .to(cur, { lidUpper: reopenLid, duration: O.reopenSec, ease: 'power2.out' });
   }
 
+  // ---- Drop: fall from the anchor to the lower third; toggles back up ------
+  const DROP_KEYS = ['posY'];
+  let dropTl = null;
+
+  // posY value that puts the pair center at viewport fraction fy (§4.1
+  // envelope-aware: clamps on viewports with no room).
+  function posYAtFrac(fy) {
+    const m = Viewport.metrics;
+    const px = fy * m.vh - m.anchorY;
+    if (px >= 0) return m.travelYDown > 0 ? Math.min(1, px / m.travelYDown) : 0;
+    return m.travelYUp > 0 ? Math.max(-1, px / m.travelYUp) : 0;
+  }
+
+  function drop() {
+    if (!hasGsap()) return;
+    if (dropTl && dropTl.isActive()) return; // idempotent
+    const O = CONFIG.oneshot;
+    const cur = Engine.current;
+    const low = posYAtFrac(O.dropLowFrac);
+    lock(DROP_KEYS);
+    const done = () => unlock(DROP_KEYS);
+    if (cur.posY < low - 0.05) {
+      // Gravity fall: accelerate, overshoot a touch, small absorb.
+      const over = Math.min(1, low + O.dropSettleAmt);
+      Engine.target.posY = low; // persists after unlock
+      dropTl = gsap.timeline({ onComplete: done })
+        .to(cur, { posY: over, duration: O.dropFall, ease: 'power3.in' })
+        .to(cur, { posY: low, duration: O.dropSettle, ease: 'power2.out' });
+    } else {
+      // Rise back to the anchor: slow, deliberate.
+      Engine.target.posY = 0;
+      dropTl = gsap.timeline({ onComplete: done })
+        .to(cur, { posY: 0, duration: O.riseSec, ease: 'power2.inOut' });
+    }
+  }
+
   // ---- §13: Gentle overrides everything; Sleep cancels everything ---------
   function cancelAll() {
     if (lungeTl) { lungeTl.kill(); lungeTl = null; }
     if (vanishTl) { vanishTl.kill(); vanishTl = null; }
+    if (dropTl) { dropTl.kill(); dropTl = null; }
     lungeHeld = false;
     Engine.lockedKeys.clear();
     blackout = false;
@@ -128,7 +165,7 @@ const Oneshots = (() => {
   function sleep() { cancelAll(); Engine.applyPreset('dormant'); }
 
   return {
-    lunge, lungeStart, lungeEnd, vanish, gentle, sleep, cancelAll,
+    lunge, lungeStart, lungeEnd, vanish, drop, gentle, sleep, cancelAll,
     get blackout() { return blackout; },
   };
 })();

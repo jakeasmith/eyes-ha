@@ -91,6 +91,11 @@ const CONFIG = {
     vanishJumpMin: 0.3,   // posY jump within the envelope
     vanishJumpMax: 0.8,
     reopenSec: 0.25,
+    dropLowFrac: 2 / 3,   // drop lands with the pair center at this viewport fraction
+    dropFall: 0.4,        // accelerating fall
+    dropSettle: 0.2,      // small post-landing absorb
+    dropSettleAmt: 0.05,  // posY recoil after landing
+    riseSec: 1.1,         // slow deliberate glide back to the anchor
   },
   presetTimeoutSec: 90,   // narrowed/rage auto-return to watching (§13.1)
 
