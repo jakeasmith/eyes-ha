@@ -589,7 +589,7 @@ The preset dropdown lists **resting presets only**. One-shots are buttons — se
 
 ## 14. Local Keyboard Fallback
 
-If MQTT is unreachable the show still runs. `1`–`7` presets, `L` Lunge, `V` Vanish, `G` Gentle, `S` Sleep, `↑`/`↓` intensity, `M` mirror toggle, `` ` `` Tweakpane.
+If MQTT is unreachable the show still runs. The map is left-hand-first so the operator can drive it one-handed: `1`–`5` dormant/stirring/watching/curious/narrowed, `Q` rage, `W` speaking, `G` Gentle (doubles as the §13 override), `S` Sleep, `F` Lunge, `V` Vanish, `E` cycles gaze zones, `A`/`Z` intensity up/down, `` ` `` Tweakpane. Right hand (rare): `M` mirror toggle, `?` shortcut overlay.
 
 ---
 

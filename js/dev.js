@@ -1,8 +1,12 @@
 'use strict';
-// Dev harness (§3, §14 subset for steps 1–3): number keys switch presets,
-// backtick toggles a Tweakpane panel bound to the live parameters plus a
-// stats.js FPS meter. Dev-only: hidden by default, never on the live display,
-// and the page renders fine if the CDN scripts fail to load.
+// Dev harness (§3, §14): left-hand-first keyboard control plus a Tweakpane
+// panel and stats.js FPS meter behind backtick. Dev-only: hidden by default,
+// never on the live display, and the page renders fine if the CDN scripts
+// fail to load.
+//
+// One BINDINGS table drives both the key handler and the ? overlay, so the
+// help can't drift from the real map. Everything night-critical sits under
+// the left hand; m and ? are rare enough to live on the right.
 
 const Dev = (() => {
   let pane = null;
@@ -21,6 +25,54 @@ const Dev = (() => {
     Motion: ['jitter', 'microsaccadeRate', 'scanRate', 'blinkRate', 'driftSpeed', 'talk',
              'tau', 'pupilAttackMs', 'pupilReleaseMs'],
   };
+
+  const refresh = () => { if (pane) pane.refresh(); };
+
+  function preset(name) {
+    Engine.applyPreset(name);
+    refresh();
+  }
+
+  function cycleZone() {
+    const order = Object.keys(ZONES);
+    const next = order[(order.indexOf(Engine.activeZone) + 1) % order.length];
+    Engine.setGazeZone(next);
+    devState.zone = next;
+    refresh();
+  }
+
+  function bumpIntensity(d) {
+    devState.intensity = Math.min(1, Math.max(0, Engine.intensityTarget + d));
+    Engine.setIntensity(devState.intensity);
+    refresh();
+  }
+
+  function toggleHelp() {
+    document.body.classList.toggle('help');
+  }
+
+  // [key, label, action] — gentle doubles as the §13 override (cancels all
+  // one-shots), so it needs no separate preset key.
+  const BINDINGS = [
+    ['1', 'dormant', () => preset('dormant')],
+    ['2', 'stirring', () => preset('stirring')],
+    ['3', 'watching', () => preset('watching')],
+    ['4', 'curious', () => preset('curious')],
+    ['5', 'narrowed', () => preset('narrowed')],
+    ['q', 'rage', () => preset('rage')],
+    ['w', 'speaking', () => preset('speaking')],
+    ['g', 'gentle (cancels all)', () => { Oneshots.gentle(); refresh(); }],
+    ['s', 'sleep', () => { Oneshots.sleep(); refresh(); }],
+    ['f', 'lunge', () => Oneshots.lunge()],
+    ['v', 'vanish', () => Oneshots.vanish()],
+    ['e', 'next gaze zone', cycleZone],
+    ['a', 'intensity +', () => bumpIntensity(0.05)],
+    ['z', 'intensity −', () => bumpIntensity(-0.05)],
+    ['`', 'tuning panel', () => toggle()],
+    ['m', 'mirror', () => document.body.classList.toggle('mirror')],
+    ['?', 'this help', toggleHelp],
+  ];
+  const ACTIONS = new Map(BINDINGS.map(([k, , fn]) => [k, fn]));
 
   function buildPane() {
     pane = new Tweakpane.Pane({ title: 'eyes' });
@@ -76,40 +128,14 @@ const Dev = (() => {
   function buildHelp() {
     const el = document.createElement('div');
     el.id = 'help';
-    const rows = PRESET_KEYS.map((name, i) => [String(i + 1), name]);
-    rows.push(['l', 'lunge'], ['v', 'vanish'], ['g', 'gentle (cancels all)'], ['s', 'sleep'],
-               ['\u2191\u2193', 'intensity'], ['`', 'tuning panel'], ['m', 'mirror'], ['?', 'this help']);
-    el.textContent = rows.map(([k, label]) => `${k}  ${label}`).join('\n');
+    el.textContent = BINDINGS.map(([k, label]) => `${k}  ${label}`).join('\n');
     document.body.appendChild(el);
   }
 
   function onKey(e) {
-    if (e.key === '`') { toggle(); return; }
-    if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
-      document.body.classList.toggle('help');
-      return;
-    }
-    if (e.key === 'm' || e.key === 'M') {
-      document.body.classList.toggle('mirror');
-      return;
-    }
-    const k = e.key.toLowerCase();
-    if (k === 'l') { Oneshots.lunge(); return; }
-    if (k === 'v') { Oneshots.vanish(); return; }
-    if (k === 'g') { Oneshots.gentle(); if (pane) pane.refresh(); return; }
-    if (k === 's') { Oneshots.sleep(); if (pane) pane.refresh(); return; }
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-      devState.intensity = Math.min(1, Math.max(0,
-        Engine.intensityTarget + (e.key === 'ArrowUp' ? 0.05 : -0.05)));
-      Engine.setIntensity(devState.intensity);
-      if (pane) pane.refresh();
-      return;
-    }
-    const idx = parseInt(e.key, 10) - 1;
-    if (idx >= 0 && idx < PRESET_KEYS.length) {
-      Engine.applyPreset(PRESET_KEYS[idx]);
-      if (pane) pane.refresh();
-    }
+    if (e.key === '/' && e.shiftKey) { toggleHelp(); return; } // '?' variant
+    const fn = ACTIONS.get(e.key.toLowerCase());
+    if (fn) fn();
   }
 
   function frame() {
