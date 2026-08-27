@@ -44,6 +44,23 @@ const CONFIG = {
   breatheScaleAmp: 0.01,
   jitterGaze: 0.05,        // gaze tremble amplitude at jitter=1, in gaze units
 
+  // ---- Speech implication (talk > 0) ----
+  // A talking face is implied by CORRELATED prosody: brow beats, micro-nods,
+  // gaze aversion/return, and boundary blinks all riding one utterance/pause
+  // clock. Amplitudes scale with the talk param.
+  speech: {
+    utterMin: 1.2, utterMax: 3.6,   // seconds of "speaking"
+    pauseMin: 0.4, pauseMax: 1.5,   // seconds between utterances
+    beatGapMin: 0.25, beatGapMax: 0.7,
+    beatAmpMin: 0.12, beatAmpMax: 0.32,  // browHeight pulse
+    nodP: 0.45,                     // P(a beat also nods)
+    nodAmpMin: 0.02, nodAmpMax: 0.05,    // fraction of eye height
+    avertP: 0.6,                    // P(gaze aversion at utterance start)
+    avertX: 0.3, avertY: 0.18,      // gaze units; Y biased upward (formulating)
+    boundaryBlinkP: 0.5,
+    tiltSway: 1.3,                  // degrees of slow head-tilt sway
+  },
+
   // ---- Per-eye asymmetry ----
   lidAsymBrowFactor: 2.0,  // lidAsym also raises the right brow (curious: "one brow raised")
 
@@ -111,6 +128,7 @@ const PARAM_META = {
   scanRate:            { min: 0,    max: 4,    smoothing: 'tau' },
   blinkRate:           { min: 0,    max: 30,   smoothing: 'tau' },
   driftSpeed:          { min: 0,    max: 2,    smoothing: 'tau' },
+  talk:                { min: 0,    max: 1,    smoothing: 'tau' },
   tau:                 { min: 80,   max: 600,  smoothing: 'snap' },
   pupilAttackMs:       { min: 120,  max: 400,  smoothing: 'snap', persist: true },
   pupilReleaseMs:      { min: 800,  max: 3000, smoothing: 'snap', persist: true },
@@ -128,7 +146,7 @@ const DEFAULTS = {
   scleraBrightness: 0.45, scleraHue: 40, scleraSat: 0.05,
   catchlightIntensity: 0.3, glowRadius: 0.3, glowIntensity: 0.15,
   jitter: 0.05, microsaccadeRate: 0.3, scanRate: 0, blinkRate: 2,
-  driftSpeed: 0.4, tau: 500, pupilAttackMs: 200, pupilReleaseMs: 1400,
+  driftSpeed: 0.4, talk: 0, tau: 500, pupilAttackMs: 200, pupilReleaseMs: 1400,
 };
 
 // ---- Presets (§10.1 verbatim; curious/narrowed interpolated per §10) ----
@@ -189,6 +207,16 @@ const PRESETS = {
               catchlightIntensity: 0.7, glowRadius: 0.6, glowIntensity: 0.4,
               jitter: 0.02, microsaccadeRate: 0.5, scanRate: 0, blinkRate: 12,
               driftSpeed: 0.6, tau: 350 },
+
+  // Not in §10.1 — implies a talking face (no mouth shown) via the speech
+  // prosody machinery in the life layer.
+  speaking: { lidUpper: 0.82, lidLower: 0.10, pupilSize: 0.38, irisSize: 0.45,
+              eyeScale: 1.0, browAngle: 2, browHeight: 0.1, browArch: 0.55,
+              browVisible: 0.85, irisHue: 40, irisSat: 0.5, irisLight: 0.5,
+              scleraBrightness: 0.85, scleraHue: 45, scleraSat: 0.05,
+              catchlightIntensity: 0.8, glowRadius: 0.5, glowIntensity: 0.45,
+              jitter: 0.08, microsaccadeRate: 0.7, scanRate: 0, blinkRate: 15,
+              driftSpeed: 1.0, tau: 250, talk: 0.85 },
 };
 
-const PRESET_KEYS = ['dormant', 'stirring', 'watching', 'curious', 'narrowed', 'rage', 'gentle'];
+const PRESET_KEYS = ['dormant', 'stirring', 'watching', 'curious', 'narrowed', 'rage', 'gentle', 'speaking'];

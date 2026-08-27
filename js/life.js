@@ -36,16 +36,40 @@ const Life = (() => {
     return { x: s.px + (s.x - s.px) * e, y: s.py + (s.y - s.py) * e };
   };
 
-  function fire(s, ampX, ampY) {
+  // Rebase from the current eased position and move to (x, y).
+  function fireTo(s, x, y) {
     const at = eased(s);
     s.px = at.x;
     s.py = at.y;
-    const ang = rand() * Math.PI * 2;
-    const m = 0.4 + rand() * 0.6;
-    s.x = Math.cos(ang) * ampX * m;
-    s.y = Math.sin(ang) * ampY * m;
+    s.x = x;
+    s.y = y;
     s.onset = t;
     return s.y - s.py; // vertical direction of this shift (negative = upward)
+  }
+
+  function fire(s, ampX, ampY) {
+    const ang = rand() * Math.PI * 2;
+    const m = 0.4 + rand() * 0.6;
+    return fireTo(s, Math.cos(ang) * ampX * m, Math.sin(ang) * ampY * m);
+  }
+
+  // ---- Speech prosody (talk > 0): implies a talking face by riding brow
+  // beats, micro-nods, gaze aversion/return, and boundary blinks on one
+  // shared utterance/pause clock. Correlation is the effect — independent
+  // random motion does not read as speech.
+  const speech = {
+    phase: 'pause', until: 0.5,
+    nextBeat: 0, beatT: -10, beatAmp: 0,
+    nodT: -10, nodAmp: 0,
+    gaze: makeSaccade(),
+  };
+  speech.gaze.next = Infinity;
+
+  // Fast attack, exponential decay — the shape of a stressed-syllable gesture.
+  function pulse(e) {
+    if (!(e >= 0)) return 0;
+    if (e < 0.08) return e / 0.08;
+    return Math.exp(-(e - 0.08) / 0.16);
   }
 
   function startBlink(cur) {
@@ -141,6 +165,44 @@ const Life = (() => {
     }
     disp.blinkL = blinkEnvelope(blink.t0L, blink.hold);
     disp.blinkR = blinkEnvelope(blink.t0R, blink.hold);
+
+    // ---- Speech prosody.
+    disp.nodY = 0;
+    if (cur.talk > 0.02) {
+      const S = CONFIG.speech;
+      const k = cur.talk;
+      if (t >= speech.until) {
+        if (speech.phase === 'utter') {
+          speech.phase = 'pause';
+          speech.until = t + S.pauseMin + rand() * (S.pauseMax - S.pauseMin);
+          fireTo(speech.gaze, 0, 0); // boundary: return to the viewer
+          if (rand() < S.boundaryBlinkP) startBlink(cur);
+        } else {
+          speech.phase = 'utter';
+          speech.until = t + S.utterMin + rand() * (S.utterMax - S.utterMin);
+          speech.nextBeat = t + 0.1;
+          if (rand() < S.avertP) {
+            // Formulating: glance off to a side, biased slightly upward.
+            fireTo(speech.gaze, (rand() * 2 - 1) * S.avertX, -rand() * S.avertY);
+          }
+        }
+      }
+      if (speech.phase === 'utter' && t >= speech.nextBeat) {
+        speech.beatT = t;
+        speech.beatAmp = S.beatAmpMin + rand() * (S.beatAmpMax - S.beatAmpMin);
+        if (rand() < S.nodP) {
+          speech.nodT = t;
+          speech.nodAmp = S.nodAmpMin + rand() * (S.nodAmpMax - S.nodAmpMin);
+        }
+        speech.nextBeat = t + S.beatGapMin + rand() * (S.beatGapMax - S.beatGapMin);
+      }
+      disp.browHeight += pulse(t - speech.beatT) * speech.beatAmp * k;
+      disp.nodY = pulse(t - speech.nodT) * speech.nodAmp * k;
+      const g = eased(speech.gaze);
+      disp.gazeX = Math.max(-1, Math.min(1, disp.gazeX + g.x * k));
+      disp.gazeY = Math.max(-1, Math.min(1, disp.gazeY + g.y * k));
+      disp.headTilt += (jitterNoiseX(t * 1.1 + 200) * 2 - 1) * S.tiltSway * k;
+    }
 
     // ---- Drift (§6.4): brow value noise + breathing, scaled by driftSpeed.
     const ds = cur.driftSpeed;

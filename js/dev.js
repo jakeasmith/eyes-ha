@@ -17,7 +17,7 @@ const Dev = (() => {
     Brows: ['browAngle', 'browHeight', 'browArch', 'browVisible'],
     Color: ['irisHue', 'irisSat', 'irisLight', 'scleraBrightness', 'scleraHue',
             'scleraSat', 'catchlightIntensity', 'glowRadius', 'glowIntensity'],
-    Motion: ['jitter', 'microsaccadeRate', 'scanRate', 'blinkRate', 'driftSpeed',
+    Motion: ['jitter', 'microsaccadeRate', 'scanRate', 'blinkRate', 'driftSpeed', 'talk',
              'tau', 'pupilAttackMs', 'pupilReleaseMs'],
   };
 
