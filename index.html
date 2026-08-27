@@ -38,6 +38,9 @@
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"
         integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt"
         crossorigin="anonymous" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"
+        integrity="sha384-u4uqeACkFcoKl57rBQJHVGDd1pqhW4w8X3WjTu1ZksPdxoLqdt34jpoNkJisE25W"
+        crossorigin="anonymous" defer></script>
 <!-- Dev-only tools. The page must render fine if these fail to load. -->
 <script src="https://cdn.jsdelivr.net/npm/tweakpane@3.1.10/dist/tweakpane.min.js"
         integrity="sha384-uYMPXLUnhfw0j6e3zxNPK3rUYRZ/ix65z2pvk73hNo/p6LEzvdXo5cA3CCBs25az"
@@ -57,8 +60,12 @@
 <script src="js/engine.js"></script>
 <script src="js/life.js"></script>
 <script src="js/renderer.js"></script>
-<!-- App side: one-shots + dev harness + boot -->
+<!-- App side: one-shots + MQTT + dev harness + boot. config.js is a
+     gitignored sibling holding broker credentials (§11.1); a 404 here is
+     expected and harmless when it hasn't been created. -->
+<script src="config.js"></script>
 <script src="js/oneshots.js"></script>
+<script src="js/net.js"></script>
 <script src="js/dev.js"></script>
 <script src="js/main.js"></script>
 </body>

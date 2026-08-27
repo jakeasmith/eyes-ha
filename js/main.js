@@ -9,6 +9,9 @@
   Iris.generate();
   Engine.applyPreset('dormant');
   Dev.init();
+  // Deferred CDN scripts (mqtt.js) execute after this inline script — start
+  // the network layer once they have.
+  window.addEventListener('load', () => Net.init());
 
   window.addEventListener('resize', () => Renderer.resize());
 
@@ -20,6 +23,7 @@
     Engine.step(dt);
     Life.apply(dt, Engine.current, Engine.display, Engine.intensity);
     Renderer.render(Engine.display, Oneshots.blackout);
+    Net.frame();
     Dev.frame();
 
     requestAnimationFrame(frame);

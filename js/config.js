@@ -96,6 +96,7 @@ const CONFIG = {
     dropSettle: 0.2,      // small post-landing absorb
     dropSettleAmt: 0.05,  // posY recoil after landing
     riseSec: 1.1,         // slow deliberate glide back to the anchor
+    noticeStirSec: 2.8,   // §12.1 Notice: stirring scan before settling to watching
   },
   presetTimeoutSec: 90,   // narrowed/rage auto-return to watching (§13.1)
 

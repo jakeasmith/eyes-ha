@@ -151,11 +151,25 @@ const Oneshots = (() => {
     }
   }
 
+  // ---- Notice (§12.1): dormant -> stirring -> watching, gaze to walkway.
+  let noticeTimer = null;
+
+  function notice() {
+    if (noticeTimer) clearTimeout(noticeTimer);
+    Engine.applyPreset('stirring');
+    Engine.setGazeZone('walkway');
+    noticeTimer = setTimeout(() => {
+      noticeTimer = null;
+      Engine.applyPreset('watching');
+    }, CONFIG.oneshot.noticeStirSec * 1000);
+  }
+
   // ---- §13: Gentle overrides everything; Sleep cancels everything ---------
   function cancelAll() {
     if (lungeTl) { lungeTl.kill(); lungeTl = null; }
     if (vanishTl) { vanishTl.kill(); vanishTl = null; }
     if (dropTl) { dropTl.kill(); dropTl = null; }
+    if (noticeTimer) { clearTimeout(noticeTimer); noticeTimer = null; }
     lungeHeld = false;
     Engine.lockedKeys.clear();
     blackout = false;
@@ -165,7 +179,7 @@ const Oneshots = (() => {
   function sleep() { cancelAll(); Engine.applyPreset('dormant'); }
 
   return {
-    lunge, lungeStart, lungeEnd, vanish, drop, gentle, sleep, cancelAll,
+    lunge, lungeStart, lungeEnd, vanish, drop, notice, gentle, sleep, cancelAll,
     get blackout() { return blackout; },
   };
 })();
