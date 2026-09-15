@@ -3,6 +3,11 @@
 A quick hobby project: a pair of animated eyes projected onto an upstairs
 window for Halloween, controlled from Home Assistant.
 
+[![The eyes moving from watching to curious to rage and back](docs/demo.gif)](docs/demo.mp4)
+
+Recorded straight from `index.html`: watching, curious, rage, and back.
+[Full-quality MP4](docs/demo.mp4).
+
 Everything is drawn in code on a 2D canvas. No build step, no image assets,
 no backend. The iris is generated procedurally from a seed, and a constantly
 running "life layer" (microsaccades, asymmetric blinks, drift, breathing)
