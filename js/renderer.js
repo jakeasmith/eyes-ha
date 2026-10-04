@@ -35,7 +35,8 @@ const Renderer = (() => {
   }
 
   function resize() {
-    const m = Viewport.compute();
+    // Layout size, not on-screen size: the projection warp is a transform.
+    const m = Viewport.compute(canvas.clientWidth, canvas.clientHeight);
     canvas.width = Math.round(m.vw * m.dpr);
     canvas.height = Math.round(m.vh * m.dpr);
     for (const k of Object.keys(caches)) caches[k].key = null;

@@ -37,6 +37,15 @@ origin at `/mqtt` (`tailscale serve` handles both jobs nicely).
 zones, `a`/`z` intensity, backtick for the tuning panel, `?` for the full
 list.
 
+## Projector setup
+
+Projecting onto a window from an angle? Press `p` on the display machine
+and drag the four corner handles onto the window frame. The page is
+perspective-warped to fit, and everything outside the frame goes black, so
+nothing spills onto the wall. Use `[`/`]` until the grid cells look square,
+then press `p` again. The calibration is saved in that browser, so after
+moving the projector you only need to re-pin the corners.
+
 ## License
 
 MIT.

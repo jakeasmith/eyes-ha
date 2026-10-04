@@ -72,6 +72,7 @@ const Dev = (() => {
     ['z', 'intensity −', () => bumpIntensity(-0.05)],
     ['`', 'tuning panel', () => toggle()],
     ['m', 'mirror', () => document.body.classList.toggle('mirror')],
+    ['p', 'projection calibration', () => Projection.toggle()],
     ['?', 'this help', toggleHelp],
   ];
   const ACTIONS = new Map(BINDINGS.filter(([, , fn]) => fn).map(([k, , fn]) => [k, fn]));
@@ -135,6 +136,7 @@ const Dev = (() => {
   }
 
   function onKey(e) {
+    if (Projection.active) { Projection.onKey(e); return; }
     if (e.key === 'Shift') {
       if (!e.repeat) Oneshots.lungeStart();
       return;

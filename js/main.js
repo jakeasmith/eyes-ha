@@ -5,6 +5,7 @@
 (() => {
   const canvas = document.getElementById('stage');
 
+  Projection.init();
   Renderer.init(canvas);
   Iris.generate();
   Engine.applyPreset('dormant');
@@ -13,7 +14,7 @@
   // the network layer once they have.
   window.addEventListener('load', () => Net.init());
 
-  window.addEventListener('resize', () => Renderer.resize());
+  window.addEventListener('resize', () => Projection.relayout());
 
   let last = performance.now();
   function frame(now) {

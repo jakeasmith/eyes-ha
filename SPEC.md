@@ -112,6 +112,14 @@ Hosted on a server, exposed via `tailscale serve`. Two consequences that matter:
 
 Note the display device is not the host. The browser rendering this may be a laptop, a tablet, a Pi — which is exactly why §4.1 assumes nothing.
 
+### 4.4 Projection calibration
+
+The live display is a projector aimed at a window from off-axis, and it gets moved daily. `P` opens a corner-pin calibration: a grid fills the content, and dragging four handles onto the window frame's corners applies a projective transform (CSS `matrix3d`) that maps the content rect onto that quad. Everything outside the quad is page black, so nothing spills onto the wall. `Tab`/arrows nudge the selected corner (Shift ×10).
+
+The projection hides the window's true proportions, so the content aspect is its own value: `[`/`]` adjust it (Shift for fine steps) until the grid cells look square on the glass. §4.1 geometry derives from that content rect rather than from the browser viewport.
+
+Corners (as viewport fractions) and aspect are saved in the display browser's `localStorage` and reapplied on load. Uncalibrated, the content fills the viewport untransformed. `R` resets to full frame; `P` or `Esc` closes. While calibrating, the calibration owns the keyboard, so preset keys can't fire. The warp corrects keystone (any four-corner perspective error); it does not correct lens distortion or a non-flat surface.
+
 ## 5. Rendering Architecture
 
 ### 5.1 Three-layer state model
@@ -589,7 +597,7 @@ The preset dropdown lists **resting presets only**. One-shots are buttons — se
 
 ## 14. Local Keyboard Fallback
 
-If MQTT is unreachable the show still runs. The map is left-hand-first so the operator can drive it one-handed: `1`–`5` dormant/stirring/watching/curious/narrowed, `Q` rage, `W` speaking, `G` Gentle (doubles as the §13 override), `S` Sleep, `F` Lunge, `V` Vanish, `E` cycles gaze zones, `A`/`Z` intensity up/down, `` ` `` Tweakpane. Right hand (rare): `M` mirror toggle, `?` shortcut overlay.
+If MQTT is unreachable the show still runs. The map is left-hand-first so the operator can drive it one-handed: `1`–`5` dormant/stirring/watching/curious/narrowed, `Q` rage, `W` speaking, `G` Gentle (doubles as the §13 override), `S` Sleep, `F` Lunge, `V` Vanish, `E` cycles gaze zones, `A`/`Z` intensity up/down, `` ` `` Tweakpane. Right hand (rare): `M` mirror toggle, `P` projection calibration (§4.4), `?` shortcut overlay.
 
 ---
 

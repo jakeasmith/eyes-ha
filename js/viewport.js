@@ -1,7 +1,9 @@
 'use strict';
 // Viewport-derived geometry (§4.1). No assumptions about resolution or aspect
 // ratio: eye scale comes from the smaller dimension, the movement envelope
-// from whatever space is left over on each axis. Recomputed on resize.
+// from whatever space is left over on each axis. Recomputed on resize. The
+// "viewport" is the content rect the caller hands in — the browser viewport,
+// or the calibrated projection surface (§4.4).
 
 const Viewport = (() => {
   const metrics = {
@@ -12,9 +14,7 @@ const Viewport = (() => {
     travelYUp: 0, travelYDown: 0, // posY range above/below the anchor
   };
 
-  function compute() {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+  function compute(vw, vh) {
     const minDim = Math.min(vw, vh);
     const eyeW = minDim * CONFIG.eyeWidthFrac;
     const eyeH = eyeW * CONFIG.eyeAspect;
